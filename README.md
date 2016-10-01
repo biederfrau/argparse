@@ -87,7 +87,7 @@ if(a.get<bool>("--quiet")) { std::cout << "psssst\n"; } // not what you might ex
 
 ### Checking if a value has been set w/o retrieving
 
-​argparse has `has_key()`, `has_opt()` and `has_flag()`. All of them accept a variable amount of string arguments (again, in long form only) and returns true if one of them was passed (:arrow_right: disjunctive).
+argparse has `has_key()`, `has_opt()` and `has_flag()`. All of them accept a variable amount of string arguments (again, in long form only) and returns true if one of them was passed (→ disjunctive).
 
 ```c++
 if(a.has_key("--help", "--quiet")) {
