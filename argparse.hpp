@@ -1,9 +1,11 @@
+#include <cassert>
 #include <experimental/optional>
 #include <iomanip>
 #include <string>
 #include <sstream>
 #include <unordered_set>
 #include <unordered_map>
+#include <vector>
 
 struct non_homogenous_type {};
 
@@ -70,7 +72,7 @@ namespace arg {
 
         std::unordered_set<std::string> flag_set;
         std::unordered_map<std::string, exp::optional<args_t>> options;
-        std::unordered_set<std::string> ignored_set;
+        std::vector<std::string> ignored_options;
         bool valid = false;
 
         bool is_defined(std::string const& key) const { return defined_set.count(key); }
@@ -123,7 +125,7 @@ namespace arg {
         }
 
         bool is_valid() const { return valid; }
-        std::unordered_set<std::string> const& ignored_opts() const { return ignored_set; }
+        std::vector<std::string> const& ignored_opts() const { return ignored_options; }
 
         std::string usage() const {
             std::ostringstream ss;
@@ -131,13 +133,13 @@ namespace arg {
             ss << "Possible options:\n";
 
             size_t max_width = 0;
-            for(auto const& opt : defined_set) {
+            for(auto const& opt: defined_set) {
                 if(opt.first.size() > max_width) { max_width = opt.first.size(); }
             }
 
             max_width += 15;
 
-            for(auto const& opt : defined_set) {
+            for(auto const& opt: defined_set) {
                 size_t len = max_width - opt.first.size();
                 ss << '\t' << opt.first;
                 if(long_map.count(opt.first)) {
@@ -179,10 +181,9 @@ namespace arg {
                                 if(i + 1 < argc) { store_string(option, argv[++i]); }
                                 break;
                             default:
-                                std::cerr << "fuck" << '\n';
-                                std::terminate();
+                                assert(false && "this should never happen");
                         }
-                    } else { ignored_set.insert(argv[i]); }
+                    } else { ignored_options.push_back(argv[i]); }
                 }
             } catch(std::invalid_argument const& e) {
                 valid = false;
@@ -190,7 +191,7 @@ namespace arg {
             }
 
             valid = true;
-            for(auto const& key : required_set) {
+            for(auto const& key: required_set) {
                 if(!options[key] && !options[short_map[key]]) { valid = false; break; }
             }
             return *this;
@@ -200,7 +201,7 @@ namespace arg {
         bool has_key(Args... keys) const {
             static_assert(is_homogenous_pack<Args...>::value,
                           "\033[1;31merror\033[0m: nonhomogenous keys");
-            for(auto const& k : { ::std::forward<Args>(keys)... }) {
+            for(auto const& k: { ::std::forward<Args>(keys)... }) {
                 if(options.count(k) || flag_set.count(k)) { return true; }
             }
             return false;
@@ -210,7 +211,7 @@ namespace arg {
         bool has_flag(Args... flags) const {
             static_assert(is_homogenous_pack<Args...>::value,
                           "\033[1;31merror\033[0m: nonhomogenous keys");
-            for(auto const& k : { ::std::forward<Args>(flags)... }) {
+            for(auto const& k: { ::std::forward<Args>(flags)... }) {
                 if(flag_set.count(k)) { return true; }
             }
             return false;
@@ -220,7 +221,7 @@ namespace arg {
         bool has_opt(Args... opts) const {
             static_assert(is_homogenous_pack<Args...>::value,
                           "\033[1;31merror\033[0m: nonhomogenous keys");
-            for(auto const& k : { ::std::forward<Args>(opts)... }) {
+            for(auto const& k: { ::std::forward<Args>(opts)... }) {
                 if(options.count(k)) { return true; }
             }
             return false;
